@@ -130,6 +130,8 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
             await pane.ConnectAsync()
                 .ConfigureAwait(false);
 
+            //pane.DockHandler.acc
+
             return pane;
         }
 
