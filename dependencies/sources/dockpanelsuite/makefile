@@ -45,7 +45,7 @@ $(MAKEDIR)\obj\WinFormsUI\WinFormsUI.csproj:
 	git config user.email "iap-desktop+build@google.com"
 	git config user.name "IAP Desktop Build"
 	git am $(MAKEDIR)\patches\0001-Refresh-focus-when-active-pane-has-changed.patch
-    git am $(MAKEDIR)\patches\0002-Refactor-DockPanelColorPalette.patch
+	git am $(MAKEDIR)\patches\0002-Refactor-DockPanelColorPalette.patch
 	git am $(MAKEDIR)\patches\0003-Add-accent-color-for-tabs.patch
 
 	cd $(MAKEDIR)
