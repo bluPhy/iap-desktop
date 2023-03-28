@@ -1,15 +1,17 @@
-From add9831fb95fdb8e069876df084525ac68ba84e4 Mon Sep 17 00:00:00 2001
+From aed2dcf34a67ef93ed58c60e7e2b83e62e2214f5 Mon Sep 17 00:00:00 2001
 From: IAP Desktop Build <iap-desktop+build@google.com>
 Date: Tue, 28 Mar 2023 15:35:27 +1100
 Subject: [PATCH 3/3] Add accent color for tabs
 
+* Extend theme to allow 4 accent colors
+* Allow tabs to (optionally) specify an accent color
 ---
- WinFormsUI/Docking/DockContentHandler.cs      | 20 ++++++++++++
- WinFormsUI/Docking/DockPanelColorPalette.cs   | 27 ++++++++++++++++
+ WinFormsUI/Docking/DockContentHandler.cs      | 20 +++++++++++
+ WinFormsUI/Docking/DockPanelColorPalette.cs   | 27 ++++++++++++++
  WinFormsUI/Docking/IImageService.cs           |  4 +++
- WinFormsUI/ThemeVS2012/ImageService.cs        | 31 +++++++++++++++++++
- WinFormsUI/ThemeVS2013/VS2013DockPaneStrip.cs | 13 ++++----
- 5 files changed, 89 insertions(+), 6 deletions(-)
+ WinFormsUI/ThemeVS2012/ImageService.cs        | 35 +++++++++++++++++++
+ WinFormsUI/ThemeVS2013/VS2013DockPaneStrip.cs | 13 +++----
+ 5 files changed, 93 insertions(+), 6 deletions(-)
 
 diff --git a/WinFormsUI/Docking/DockContentHandler.cs b/WinFormsUI/Docking/DockContentHandler.cs
 index eb0d319..fa3c2ac 100644
@@ -43,7 +45,7 @@ index eb0d319..fa3c2ac 100644
          {
              if (m_tabPageContextMenuStrip != null && DockPanel != null)
 diff --git a/WinFormsUI/Docking/DockPanelColorPalette.cs b/WinFormsUI/Docking/DockPanelColorPalette.cs
-index bd41e8a..bae870b 100644
+index bd41e8a..80922a2 100644
 --- a/WinFormsUI/Docking/DockPanelColorPalette.cs
 +++ b/WinFormsUI/Docking/DockPanelColorPalette.cs
 @@ -312,6 +312,33 @@ protected DockPanelColorPalette(XDocument xml)
@@ -51,10 +53,10 @@ index bd41e8a..bae870b 100644
          public CommandBarToolbarOverflowButtonPalette CommandBarToolbarOverflowHovered { get; }
          public CommandBarToolbarOverflowButtonPalette CommandBarToolbarOverflowPressed { get; }
 +
-+        public TabPalette TabSelectedActiveAccent1 { get; }
-+        public TabPalette TabSelectedActiveAccent2 { get; }
-+        public TabPalette TabSelectedActiveAccent3 { get; }
-+        public TabPalette TabSelectedActiveAccent4 { get; }
++        public TabPalette TabSelectedActiveAccent1 { get; set; }
++        public TabPalette TabSelectedActiveAccent2 { get; set; }
++        public TabPalette TabSelectedActiveAccent3 { get; set; }
++        public TabPalette TabSelectedActiveAccent4 { get; set; }
 +
 +        public TabPalette GetTabSelectedActive(TabAccentColorIndex index)
 +        {
@@ -96,10 +98,10 @@ index 30e4002..2723cce 100644
  
      public static class ImageServiceHelper
 diff --git a/WinFormsUI/ThemeVS2012/ImageService.cs b/WinFormsUI/ThemeVS2012/ImageService.cs
-index aac259f..b0d7a72 100644
+index aac259f..7f913d0 100644
 --- a/WinFormsUI/ThemeVS2012/ImageService.cs
 +++ b/WinFormsUI/ThemeVS2012/ImageService.cs
-@@ -180,6 +180,37 @@ public ImageService(ThemeBase theme)
+@@ -180,6 +180,41 @@ public ImageService(ThemeBase theme)
              DockPanePress_Dock = ImageServiceHelper.GetImage(Resources.MaskToolWindowDock, _palette.ToolWindowCaptionButtonPressed.Glyph, _palette.ToolWindowCaptionButtonPressed.Background, _palette.ToolWindowCaptionButtonPressed.Border);
              DockPanePress_Option = ImageServiceHelper.GetImage(Resources.MaskToolWindowOption, _palette.ToolWindowCaptionButtonPressed.Glyph, _palette.ToolWindowCaptionButtonPressed.Background, _palette.ToolWindowCaptionButtonPressed.Border);
              DockPanePress_AutoHide = ImageServiceHelper.GetImage(Resources.MaskToolWindowAutoHide, _palette.ToolWindowCaptionButtonPressed.Glyph, _palette.ToolWindowCaptionButtonPressed.Background, _palette.ToolWindowCaptionButtonPressed.Border);
@@ -108,7 +110,11 @@ index aac259f..b0d7a72 100644
 +            m_tabHoverActive = new Image[(int)TabAccentColorIndex.Max + 1];
 +            m_tabPressActive = new Image[(int)TabAccentColorIndex.Max + 1];
 +
-+            for (var colorIndex = TabAccentColorIndex.None; colorIndex <= TabAccentColorIndex.Max; colorIndex++)
++            m_tabActive[0] = TabActive_Close;
++            m_tabHoverActive[0] = TabHoverActive_Close;
++            m_tabPressActive[0] = TabPressActive_Close;
++
++            for (var colorIndex = TabAccentColorIndex.Hightlight1; colorIndex <= TabAccentColorIndex.Max; colorIndex++)
 +            {
 +                // NB. Don't use a hover effect and use static colors for press... just like VS2022 does.
 +                m_tabActive[(int)colorIndex] = ImageServiceHelper.GetImage(Resources.MaskTabClose, _palette.GetTabSelectedActive(colorIndex).Button, _palette.GetTabSelectedActive(colorIndex).Background);
@@ -182,5 +188,5 @@ index b169dfb..2aeea5b 100644
                  else
                  {
 -- 
-2.40.0.windows.1
+2.34.1.windows.1
 
