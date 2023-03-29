@@ -50,6 +50,7 @@ namespace Google.Solutions.Ssh.Auth
     public static class SshKeyPair
     {
         private const int NTE_EXISTS = -2146893809; // 0x8009000F
+        private const int NTE_TEMPORARY_PROFILE = -2146893788; // 0x80090024;
 
         private static CngKey OpenPersistentKeyPair(
             string name,
@@ -70,11 +71,39 @@ namespace Google.Solutions.Ssh.Auth
                 // the default Microsoft Software Key Storage Provider.
                 // (see https://docs.microsoft.com/en-us/windows/win32/seccng/key-storage-and-retrieval)
                 //
-                // For testing, you can list CNG keys using
+                // For testing, we can list CNG keys using
                 // certutil -csp "Microsoft Software Key Storage Provider" -key -user
                 //
 
-                if (CngKey.Exists(name))
+                bool keyExists;
+                try
+                {
+                    keyExists = CngKey.Exists(name);
+                }
+                catch (CryptographicException e) when (e.HResult == NTE_TEMPORARY_PROFILE)
+                {
+                    SshTraceSources.Default.TraceWarning(
+                        "The Windows profile is temporary, falling back to using an unnamed key: {0}", 
+                        e.Message);
+
+                    //
+                    // When the Windows profile is temporary ("mandatory"), we can't access
+                    // persistent keys [1]. But we can still create ephemeral (unnamed) keys
+                    // if we set name to null.
+                    //
+                    // Note for testing: The following PowerShell [2] command turns a profile read-only:
+                    //
+                    //   $USERSID='S-...' # SID of user
+                    //   Set-ItemProperty -path Registry::"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$USERSID\" -Name State -Value 128
+                    //
+                    // [1] https://web.archive.org/web/20140217055725/http://support.microsoft.com/kb/264732.
+                    // [2] https://web.archive.org/web/20151218221641/https://ittechlog.wordpress.com/2014/06/27/switch-a-local-profile-to-temporary/
+                    //
+                    keyExists = false;
+                    name = null;
+                }
+
+                if (keyExists)
                 {
                     var key = CngKey.Open(name);
                     if (key.Algorithm != algorithm)
