@@ -24,7 +24,7 @@ using Google.Solutions.IapDesktop.Application.Services.Integration;
 using Google.Solutions.IapDesktop.Application.Views.Dialog;
 using Google.Solutions.IapDesktop.Core.ObjectModel;
 using Google.Solutions.IapDesktop.Extensions.Shell.Services.Tunnel;
-using Google.Solutions.IapDesktop.Extensions.Shell.Views.TunnelsViewer;
+using Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.TunnelsViewer
+namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.Tunnels
 {
     [TestFixture]
     public class TestTunnelsViewModel : ShellFixtureBase

@@ -38,7 +38,7 @@ using System.Threading.Tasks;
 
 namespace Google.Solutions.IapDesktop.Extensions.Shell.Services.Session
 {
-    internal static class Transport
+    internal static class Transport //TODO: Move to COre
     {
         //---------------------------------------------------------------------
         // Factory methods.

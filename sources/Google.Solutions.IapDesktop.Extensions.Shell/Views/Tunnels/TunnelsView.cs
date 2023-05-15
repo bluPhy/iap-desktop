@@ -31,7 +31,7 @@ using WeifenLuo.WinFormsUI.Docking;
 
 #pragma warning disable IDE1006 // Naming Styles
 
-namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.TunnelsViewer
+namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
 {
     [Service(ServiceLifetime.Singleton)]
     [SkipCodeCoverage("All logic in view model")]

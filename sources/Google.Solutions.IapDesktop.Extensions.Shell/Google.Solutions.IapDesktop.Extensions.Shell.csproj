@@ -260,12 +260,12 @@
     <Compile Include="Views\SshTerminal\SshTerminalViewModel.cs" />
     <Compile Include="Views\SshTerminal\ISshTerminalSession.cs" />
     <Compile Include="Views\SshTerminal\TerminalViewModelBase.cs" />
-    <Compile Include="Views\TunnelsViewer\TunnelsViewCommands.cs" />
-    <Compile Include="Views\TunnelsViewer\TunnelsViewModel.cs" />
-    <Compile Include="Views\TunnelsViewer\TunnelsView.cs">
+    <Compile Include="Views\Tunnels\TunnelsViewCommands.cs" />
+    <Compile Include="Views\Tunnels\TunnelsViewModel.cs" />
+    <Compile Include="Views\Tunnels\TunnelsView.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\TunnelsViewer\TunnelsView.designer.cs">
+    <Compile Include="Views\Tunnels\TunnelsView.designer.cs">
       <DependentUpon>TunnelsView.cs</DependentUpon>
     </Compile>
     <Compile Include="Services\Tunnel\Tunnel.cs" />
@@ -363,7 +363,7 @@
     <EmbeddedResource Include="Views\SshTerminal\TerminalPaneBase.resx">
       <DependentUpon>TerminalPaneBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\TunnelsViewer\TunnelsView.resx">
+    <EmbeddedResource Include="Views\Tunnels\TunnelsView.resx">
       <DependentUpon>TunnelsView.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

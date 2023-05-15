@@ -182,8 +182,8 @@
     <Compile Include="Views\Session\TestConnectCommands.cs" />
     <Compile Include="Views\Session\TestSessionCommands.cs" />
     <Compile Include="Views\TestSessionPaneBase.cs" />
-    <Compile Include="Views\TunnelsViewer\TestTunnelsViewCommands.cs" />
-    <Compile Include="Views\TunnelsViewer\TestTunnelsViewModel.cs" />
+    <Compile Include="Views\Tunnels\TestTunnelsViewCommands.cs" />
+    <Compile Include="Views\Tunnels\TestTunnelsViewModel.cs" />
     <Compile Include="Services\Tunnel\TestTunnelBrokerService.cs" />
     <Compile Include="Services\Tunnel\TestTunnelService.cs" />
   </ItemGroup>

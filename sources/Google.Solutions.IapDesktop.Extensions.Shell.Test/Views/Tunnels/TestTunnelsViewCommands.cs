@@ -20,12 +20,12 @@
 //
 
 using Google.Solutions.IapDesktop.Application.Views;
-using Google.Solutions.IapDesktop.Extensions.Shell.Views.TunnelsViewer;
+using Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels;
 using Google.Solutions.Mvvm.Binding.Commands;
 using Moq;
 using NUnit.Framework;
 
-namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.TunnelsViewer
+namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.Tunnels
 {
     [TestFixture]
     public class TestTunnelsViewCommands

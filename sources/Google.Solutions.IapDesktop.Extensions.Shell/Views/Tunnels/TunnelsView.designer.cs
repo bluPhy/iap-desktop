@@ -19,7 +19,7 @@
 // under the License.
 //
 
-namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.TunnelsViewer
+namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
 {
     partial class TunnelsView
     {
@@ -53,7 +53,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.TunnelsViewer
             this.toolStrip = new System.Windows.Forms.ToolStrip();
             this.refreshToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.disconnectToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.tunnelsList = new Google.Solutions.IapDesktop.Extensions.Shell.Views.TunnelsViewer.TunnelsListView();
+            this.tunnelsList = new Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels.TunnelsListView();
             this.instanceHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.projectIdHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.zoneHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));

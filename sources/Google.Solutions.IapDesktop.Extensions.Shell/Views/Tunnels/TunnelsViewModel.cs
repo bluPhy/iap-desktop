@@ -32,7 +32,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.TunnelsViewer
+namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
 {
     [Service]
     public class TunnelsViewModel : ViewModelBase
