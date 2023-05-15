@@ -37,9 +37,6 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
         private static readonly InstanceLocator SampleInstance
             = new InstanceLocator("project-1", "zone-1", "instance-1");
 
-        private static readonly IPEndPoint LoopbackEndpoint
-            = new IPEndPoint(IPAddress.Loopback, 8000);
-
         private static IapTunnel.Profile CreateTunnelProfile()
         {
             var protocol = new Mock<IProtocol>();
@@ -52,8 +49,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
                 protocol.Object,
                 policy.Object,
                 SampleInstance,
-                22,
-                LoopbackEndpoint);
+                22);
         }
 
         //---------------------------------------------------------------------
@@ -64,7 +60,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
         public void Statistics()
         {
             var listener = new Mock<ISshRelayListener>();
-            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+            listener.SetupGet(l => l.LocalPort).Returns(123);
             listener.SetupGet(l => l.Statistics).Returns(new Iap.Net.ConnectionStatistics());
 
             using (var tunnel = new IapTunnel(
@@ -81,14 +77,16 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
         public void LocalEndpoint()
         {
             var listener = new Mock<ISshRelayListener>();
-            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+            listener.SetupGet(l => l.LocalPort).Returns(123);
 
             using (var tunnel = new IapTunnel(
                 listener.Object,
                 CreateTunnelProfile(),
                 IapTunnelFlags.None))
             {
-                Assert.AreEqual(LoopbackEndpoint, tunnel.LocalEndpoint);
+                Assert.AreEqual(
+                    new IPEndPoint(IPAddress.Loopback, 123), 
+                    tunnel.LocalEndpoint);
             }
         }
 
@@ -96,7 +94,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
         public void Details()
         {
             var listener = new Mock<ISshRelayListener>();
-            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+            listener.SetupGet(l => l.LocalPort).Returns(123);
 
             var profile = CreateTunnelProfile();
 
@@ -113,7 +111,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
         public void TargetInstance()
         {
             var listener = new Mock<ISshRelayListener>();
-            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+            listener.SetupGet(l => l.LocalPort).Returns(123);
 
             var profile = CreateTunnelProfile();
 
@@ -130,7 +128,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
         public void TargetPort()
         {
             var listener = new Mock<ISshRelayListener>();
-            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+            listener.SetupGet(l => l.LocalPort).Returns(123);
 
             var profile = CreateTunnelProfile();
 
@@ -152,7 +150,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
         {
             CancellationToken token;
             var listener = new Mock<ISshRelayListener>();
-            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+            listener.SetupGet(l => l.LocalPort).Returns(123);
             listener
                 .Setup(l => l.ListenAsync(It.IsAny<CancellationToken>()))
                 .Callback((CancellationToken t) => token = t)
@@ -180,7 +178,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
             CancellationToken token;
 
             var listener = new Mock<ISshRelayListener>();
-            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+            listener.SetupGet(l => l.LocalPort).Returns(123);
             listener
                 .Setup(l => l.ListenAsync(It.IsAny<CancellationToken>()))
                 .Callback((CancellationToken t) => token = t)

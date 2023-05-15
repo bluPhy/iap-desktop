@@ -49,9 +49,6 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
 
         private static readonly TimeSpan SampleTimeout = TimeSpan.FromSeconds(10);
 
-        private static readonly IPEndPoint LoopbackEndpoint
-            = new IPEndPoint(IPAddress.Loopback, 8000);
-
         private static Mock<IAuthorization> CreateAuthorization()
         {
             var authz = new Mock<IAuthorization>();
@@ -72,14 +69,13 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
                 protocol.Object,
                 policy.Object,
                 instance,
-                port,
-                LoopbackEndpoint);
+                port);
         }
 
         private static IapTunnel CreateTunnel(IapTunnel.Profile profile)
         {
             var listener = new Mock<ISshRelayListener>();
-            listener.SetupGet(l => l.LocalPort).Returns(profile.LocalEndpoint.Port);
+            listener.SetupGet(l => l.LocalPort).Returns(123);
             listener.SetupGet(l => l.Statistics).Returns(new Iap.Net.ConnectionStatistics());
 
             return new IapTunnel(

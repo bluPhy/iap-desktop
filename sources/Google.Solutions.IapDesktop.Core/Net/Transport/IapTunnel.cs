@@ -24,6 +24,7 @@ using Google.Solutions.Apis.Locator;
 using Google.Solutions.Common.Diagnostics;
 using Google.Solutions.Common.Runtime;
 using Google.Solutions.Common.Util;
+using Google.Solutions.Iap.Net;
 using Google.Solutions.Iap.Protocol;
 using Google.Solutions.IapDesktop.Core.Auth;
 using Google.Solutions.IapDesktop.Core.Net.Protocol;
@@ -108,7 +109,9 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
             this.Details = profile;
             this.Flags = flags;
 
-            Debug.Assert(profile.LocalEndpoint.Port == listener.LocalPort);
+            Debug.Assert(
+                profile.LocalEndpoint == null || // Auto-assigned
+                profile.LocalEndpoint.Port == listener.LocalPort);
         }
 
         internal Task CloseAsync()
@@ -137,7 +140,17 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
         // IIapTunnel.
         //-----------------------------------------------------------------
 
-        public IPEndPoint LocalEndpoint => this.Details.LocalEndpoint;
+        public IPEndPoint LocalEndpoint
+        {
+            get
+            {
+                var endpoint = new IPEndPoint(IPAddress.Loopback, this.listener.LocalPort);
+                Debug.Assert(
+                    this.Details.LocalEndpoint == null || 
+                    endpoint == this.Details.LocalEndpoint);
+                return endpoint;
+            }
+        }
 
         public IapTunnelFlags Flags { get; }
 
@@ -167,8 +180,20 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
             internal IProtocol Protocol { get; }
             internal ISshRelayPolicy Policy { get; }
 
+            /// <summary>
+            /// Instance to connect to.
+            /// </summary>
             public InstanceLocator TargetInstance { get; }
+
+            /// <summary>
+            /// Port to connect to.
+            /// </summary>
             public ushort TargetPort { get; }
+
+            /// <summary>
+            /// Custom local endpoint. If null, an endpoint is assigned
+            /// automatically.
+            /// </summary>
             public IPEndPoint LocalEndpoint { get; }
 
             internal Profile(
@@ -176,13 +201,13 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
                 ISshRelayPolicy policy,
                 InstanceLocator targetInstance,
                 ushort targetPort,
-                IPEndPoint localEndpoint)
+                IPEndPoint localEndpoint = null)
             {
                 this.Policy = policy.ExpectNotNull(nameof(policy));
                 this.Protocol = protocol.ExpectNotNull(nameof(protocol));
                 this.TargetInstance = targetInstance.ExpectNotNull(nameof(targetInstance));
                 this.TargetPort = targetPort;
-                this.LocalEndpoint = localEndpoint.ExpectNotNull(nameof(localEndpoint));
+                this.LocalEndpoint = localEndpoint; // Optional.
             }
 
             public override int GetHashCode()
@@ -192,7 +217,7 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
                     this.Protocol.Id.GetHashCode() ^
                     this.TargetInstance.GetHashCode() ^
                     this.TargetPort ^
-                    this.LocalEndpoint.GetHashCode();
+                    (this.LocalEndpoint?.GetHashCode() ?? 0);
             }
 
             public bool Equals(Profile other)
@@ -246,7 +271,8 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
             {
                 using (CoreTraceSources.Default.TraceMethod().WithParameters(profile))
                 {
-                    if (profile.LocalEndpoint.Address != IPAddress.Loopback)
+                    if (profile.LocalEndpoint != null &&
+                        profile.LocalEndpoint.Address != IPAddress.Loopback)
                     {
                         throw new ArgumentException(
                             "This implementation only supports loopback tunnels");
@@ -283,10 +309,14 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
                             .ConfigureAwait(false);
                     }
 
-                    var listener = SshRelayListener.CreateLocalListener(
-                        client,
-                        profile.Policy,
-                        profile.LocalEndpoint.Port);
+                    var listener = profile.LocalEndpoint != null
+                        ? SshRelayListener.CreateLocalListener(
+                            client,
+                            profile.Policy,
+                            profile.LocalEndpoint.Port)
+                        : SshRelayListener.CreateLocalListener(
+                            client,
+                            profile.Policy);
 
                     var tunnel = new IapTunnel(
                         listener,

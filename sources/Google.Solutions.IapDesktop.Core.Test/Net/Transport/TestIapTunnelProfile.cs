@@ -205,7 +205,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
                 CreatePolicy("policy-1"),
                 SampleInstance,
                 22,
-                new IPEndPoint(IPAddress.Parse("127.0.0.2"), LoopbackEndpoint.Port));
+                null);
 
             Assert.IsFalse(ref1.Equals(ref2));
             Assert.IsFalse(ref1.Equals((object)ref2));

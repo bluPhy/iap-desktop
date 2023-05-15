@@ -62,14 +62,14 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.Tunnels
                 factory.Object,
                 queue);
 
-            factory.VerifyGet(f => f.Pool, Times.Once);
+            factory.VerifyGet(f => f.Pool, Times.Never);
             Assert.AreEqual(0, viewModel.Tunnels.Count);
 
             queue.Publish(new TunnelEvents.TunnelCreated());
-            factory.VerifyGet(f => f.Pool, Times.Exactly(2));
+            factory.VerifyGet(f => f.Pool, Times.Exactly(1));
 
             queue.Publish(new TunnelEvents.TunnelClosed());
-            factory.VerifyGet(f => f.Pool, Times.Exactly(3));
+            factory.VerifyGet(f => f.Pool, Times.Exactly(2));
         }
 
         //---------------------------------------------------------------------

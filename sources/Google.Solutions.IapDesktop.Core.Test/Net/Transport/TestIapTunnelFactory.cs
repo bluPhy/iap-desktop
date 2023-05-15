@@ -104,8 +104,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
                 protocol.Object,
                 policy.Object,
                 SampleLocator,
-                22,
-                new IPEndPoint(IPAddress.Loopback, PortFinder.FindFreeLocalPort()));
+                22);
 
             ExceptionAssert.ThrowsAggregateException<SshRelayDeniedException>(
                 () => new IapTunnel.Factory().CreateTunnelAsync(

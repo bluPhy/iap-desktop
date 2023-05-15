@@ -146,19 +146,28 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
                         probeTimeout,
                         cancellationToken);
 
+                    this.tunnelPool[profile] = tunnelTask;
+
                     //
                     // Track lifecycle.
                     //
-                    tunnelTask = tunnelTask.ContinueWith(t =>
+                    _ = tunnelTask.ContinueWith(t =>
                     {
+                        //
+                        // Acquire the lock. That way, we ensure that the
+                        // task has been added to the pool.
+                        //
                         lock (this.tunnelPoolLock)
                         {
-                            this.tunnelPool[profile] = t;
+                            Debug.Assert(tunnelTask.IsCompleted || tunnelTask.IsFaulted);
+                            Debug.Assert(this.tunnelPool.ContainsKey(profile));
                         }
 
-                        OnTunnelCreated(t.Result); 
-                        t.Result.Closed += OnClosed;
-                        return t.Result;
+                        if (t.IsCompleted)
+                        {
+                            OnTunnelCreated(t.Result);
+                            t.Result.Closed += OnClosed;
+                        }
                     });
 
                     void OnClosed(object sender, EventArgs __)
@@ -177,7 +186,6 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
                         OnTunnelClosed(tunnel);
                         tunnel.Closed -= OnClosed;
                     }
-
                 }
 
                 Debug.Assert(tunnelTask != null);
@@ -265,13 +273,6 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
         {
             using (CoreTraceSources.Default.TraceMethod().WithParameters(targetInstance, protocol))
             {
-                if (localEndpoint == null)
-                {
-                    localEndpoint = new IPEndPoint(
-                        IPAddress.Loopback,
-                        PortFinder.FindFreeLocalPort()); //TODO: BUG: This breaks sharing
-                }
-
                 var profile = new IapTunnel.Profile(
                     protocol,
                     policy,
