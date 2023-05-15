@@ -69,6 +69,16 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.RemoteDesktop
             return registry;
         }
 
+        private static async Task<ITransport> CreateDirectRdpTransportAsync(IPEndPoint endpoint)
+        {
+            return await new DirectTransportFactory()
+                .CreateTransportAsync(
+                    RdpProtocol.Protocol,
+                    endpoint,
+                    CancellationToken.None)
+                .ConfigureAwait(true);
+        }
+
         //---------------------------------------------------------------------
         // Invalid server
         //---------------------------------------------------------------------
@@ -76,11 +86,8 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.RemoteDesktop
         [Test]
         public async Task WhenPortNotListening_ThenErrorIsShownAndWindowIsClosed()
         {
-            var transport = await Transport
-                .CreateDirectTransportForTestingOnly(
-                    new DirectTransportFactory(),
-                    RdpProtocol.Protocol,
-                    new IPEndPoint(IPAddress.Loopback, 1))
+            var unboundEndpoint = new IPEndPoint(IPAddress.Loopback, 1);
+            var transport = await CreateDirectRdpTransportAsync(unboundEndpoint)
                 .ConfigureAwait(true);
 
             var serviceProvider = CreateServiceProvider();
@@ -105,11 +112,8 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.RemoteDesktop
         public async Task WhenWrongPort_ThenErrorIsShownAndWindowIsClosed()
         {
             // That one will be listening, but it is RPC, not RDP.
-            var transport = await Transport
-                .CreateDirectTransportForTestingOnly(
-                    new DirectTransportFactory(),
-                    RdpProtocol.Protocol,
-                    new IPEndPoint(IPAddress.Loopback, 135))
+            var wrongEndpoint = new IPEndPoint(IPAddress.Loopback, 135);
+            var transport = await CreateDirectRdpTransportAsync(wrongEndpoint)
                 .ConfigureAwait(true);
 
             var serviceProvider = CreateServiceProvider();

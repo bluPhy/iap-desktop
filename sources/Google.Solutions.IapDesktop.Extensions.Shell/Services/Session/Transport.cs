@@ -182,21 +182,5 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Services.Session
                     (e as IExceptionWithHelpTopic)?.Help ?? HelpTopics.LocateInstanceIpAddress);
             }
         }
-
-        internal static async Task<ITransport> CreateDirectTransportForTestingOnly(
-            IDirectTransportFactory transportFactory,
-            IProtocol protocol,
-            IPEndPoint endpoint)
-        {
-            transportFactory.ExpectNotNull(nameof(transportFactory));
-            protocol.ExpectNotNull(nameof(protocol));
-
-            return await transportFactory
-                    .CreateTransportAsync(
-                        protocol,
-                        endpoint,
-                        CancellationToken.None)
-                    .ConfigureAwait(false);
-        }
     }
 }

@@ -49,11 +49,13 @@ namespace Google.Solutions.Common.Runtime
 
         ~DisposableBase()
         {
+#if DEBUG
             Debug.Assert(
                 this.IsDisposed,
                 "Object was not disposed or base.Dispose was not called\n\n" +
                 "Object created at:\n\n" +
                 this.stackTrace);
+#endif
             Dispose(disposing: false);
         }
     }

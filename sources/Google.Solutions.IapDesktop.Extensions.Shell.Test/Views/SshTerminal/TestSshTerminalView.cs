@@ -151,7 +151,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.SshTerminal
             PumpWindowMessages();
 
             pane.Disposed += (_, __) => transport.Dispose();
-            return (SshTerminalView)pane;
+            return pane;
         }
 
         [SetUp]
@@ -192,6 +192,16 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.SshTerminal
             }
         }
 
+        private static async Task<ITransport> CreateDirectSshTransportAsync(IPEndPoint endpoint)
+        {
+            return await new DirectTransportFactory()
+                .CreateTransportAsync(
+                    SshProtocol.Protocol,
+                    endpoint,
+                    CancellationToken.None)
+                .ConfigureAwait(true);
+        }
+
         //---------------------------------------------------------------------
         // Connect
         //---------------------------------------------------------------------
@@ -211,11 +221,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.SshTerminal
                 ConnectionTimeout = TimeSpan.FromSeconds(10)
             };
 
-            var transport = await Transport
-                .CreateDirectTransportForTestingOnly(
-                    new DirectTransportFactory(),
-                    SshProtocol.Protocol,
-                    this.UnboundEndpoint)
+            var transport = await CreateDirectSshTransportAsync(this.UnboundEndpoint)
                 .ConfigureAwait(true);
 
             var serviceProvider = CreateServiceProvider();
@@ -250,11 +256,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.SshTerminal
             };
 
             var instance = new InstanceLocator("project-1", "zone-1", "instance-1");
-            var transport = await Transport
-                .CreateDirectTransportForTestingOnly(
-                    new DirectTransportFactory(),
-                    SshProtocol.Protocol,
-                    this.NonSshEndpoint)
+            var transport = await CreateDirectSshTransportAsync(this.NonSshEndpoint)
                 .ConfigureAwait(true);
 
             var serviceProvider = CreateServiceProvider();
