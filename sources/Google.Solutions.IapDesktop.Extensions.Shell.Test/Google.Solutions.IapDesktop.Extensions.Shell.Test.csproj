@@ -128,7 +128,6 @@
     <Compile Include="Data\TestSamAccountName.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IapTunnel.cs" />
     <Compile Include="Services\Adapter\TestKeyStoreAdapter.cs" />
     <Compile Include="Services\Session\TestSshProtocol.cs" />
     <Compile Include="Services\Session\TestRdpProtocol.cs" />
@@ -168,6 +167,7 @@
     <Compile Include="Views\Download\TestDownloadFileViewModel.cs" />
     <Compile Include="Views\Options\TestSshOptionsViewModel.cs" />
     <Compile Include="Views\Options\TestTerminalOptionsViewModel.cs" />
+    <Compile Include="Views\RemoteDesktop\IapTransport.cs" />
     <Compile Include="Views\RemoteDesktop\TestRemoteDesktopView.cs" />
     <Compile Include="Views\RemoteDesktop\TestRemoteDesktopViewWithGroupPolicies.cs" />
     <Compile Include="Views\Session\TestConnectInstanceComand.cs" />

@@ -1,5 +1,5 @@
 ﻿//
-// Copyright 2020 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
@@ -21,40 +21,40 @@
 
 using Google.Apis.Auth.OAuth2;
 using Google.Solutions.Apis.Locator;
+using Google.Solutions.Iap.Net;
 using Google.Solutions.Iap.Protocol;
+using Google.Solutions.IapDesktop.Core.Net.Protocol;
+using Google.Solutions.IapDesktop.Core.Net.Transport;
 using Google.Solutions.IapDesktop.Extensions.Shell.Services.Session;
 using Google.Solutions.Testing.Common.Integration;
-using System;
 using System.Net;
-using System.Threading;
 
-namespace Google.Solutions.IapDesktop.Extensions.Shell.Test
+namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.RemoteDesktop
 {
-    internal class IapTunnel : IDisposable, ITransport
+    internal class IapTransport : ITransport
     {
-        private readonly SshRelayListener listener;
-        private readonly CancellationTokenSource tokenSource;
+        public IapTunnel Tunnel { get; }
 
-        public int LocalPort => listener.LocalPort;
+        public IProtocol Protocol { get; }
 
-        public SessionTransportType Type => SessionTransportType.IapTunnel;
+        public IPEndPoint Endpoint => this.Tunnel.LocalEndpoint;
 
-        public IPEndPoint Endpoint => new IPEndPoint(IPAddress.Loopback, listener.LocalPort);
-
-        public InstanceLocator Instance { get; }
-
-        private IapTunnel(
-            InstanceLocator instance,
-            SshRelayListener listener,
-            CancellationTokenSource tokenSource)
+        private IapTransport(IapTunnel tunnel, IProtocol protocol)
         {
-            this.Instance = instance;
-            this.listener = listener;
-            this.tokenSource = tokenSource;
+            this.Tunnel = tunnel;
+            this.Protocol = protocol;
         }
 
-        public static IapTunnel ForRdp(InstanceLocator instance, ICredential credential)
+        public void Dispose()
         {
+            this.Tunnel.Dispose();
+        }
+
+        public static IapTransport ForRdp(
+            InstanceLocator instance, 
+            ICredential credential)
+        {
+            var policy = new AllowAllRelayPolicy();
             var listener = SshRelayListener.CreateLocalListener(
                 new IapTunnelingEndpoint(
                     credential,
@@ -62,17 +62,21 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test
                     3389,
                     IapTunnelingEndpoint.DefaultNetworkInterface,
                     TestProject.UserAgent),
-                new AllowAllRelayPolicy());
+                policy);
 
-            var tokenSource = new CancellationTokenSource();
-            listener.ListenAsync(tokenSource.Token);
+            var profile = new IapTunnel.Profile(
+                RdpProtocol.Protocol,
+                policy,
+                instance,
+                3389,
+                new IPEndPoint(IPAddress.Loopback, listener.LocalPort));
 
-            return new IapTunnel(instance, listener, tokenSource);
-        }
-
-        public void Dispose()
-        {
-            this.tokenSource.Cancel();
+            return new IapTransport(
+                new IapTunnel(
+                    listener,
+                    profile,
+                    IapTunnelFlags.None),
+                RdpProtocol.Protocol);
         }
     }
 }

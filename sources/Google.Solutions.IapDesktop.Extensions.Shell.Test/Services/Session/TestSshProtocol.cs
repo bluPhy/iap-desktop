@@ -63,7 +63,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Services.Session
         [Test]
         public void TraitToString()
         {
-            StringAssert.Contains("Ssh", SshProtocol.Supported.ToString());
+            StringAssert.Contains("SSH", SshProtocol.Supported.ToString());
         }
     }
 }

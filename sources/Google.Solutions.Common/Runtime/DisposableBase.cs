@@ -26,6 +26,9 @@ namespace Google.Solutions.Common.Runtime
 {
     public abstract class DisposableBase : IDisposable
     {
+#if DEBUG
+        private readonly string stackTrace = Environment.StackTrace;
+#endif
         public bool IsDisposed { get; private set; }
 
         protected virtual void Dispose(bool disposing)
@@ -48,7 +51,9 @@ namespace Google.Solutions.Common.Runtime
         {
             Debug.Assert(
                 this.IsDisposed,
-                "Object was not disposed or base.Dispose was not called");
+                "Object was not disposed or base.Dispose was not called\n\n" +
+                "Object created at:\n\n" +
+                this.stackTrace);
             Dispose(disposing: false);
         }
     }

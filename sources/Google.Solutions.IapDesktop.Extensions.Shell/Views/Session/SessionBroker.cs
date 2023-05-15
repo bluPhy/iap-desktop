@@ -24,6 +24,7 @@ using Google.Solutions.Common.Diagnostics;
 using Google.Solutions.IapDesktop.Application.ObjectModel;
 using Google.Solutions.IapDesktop.Application.Services.Integration;
 using Google.Solutions.IapDesktop.Application.Views;
+using Google.Solutions.IapDesktop.Core.Net.Transport;
 using Google.Solutions.IapDesktop.Extensions.Shell.Services.Session;
 using Google.Solutions.IapDesktop.Extensions.Shell.Views.RemoteDesktop;
 using Google.Solutions.IapDesktop.Extensions.Shell.Views.SshTerminal;
@@ -187,6 +188,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
         }
 
         internal IRemoteDesktopSession ConnectRdpSession(
+            InstanceLocator instance,
             ITransport transport,
             RdpSessionParameters parameters,
             RdpCredential credential)
@@ -195,7 +197,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
 
             var window = this.toolWindowHost.GetToolWindow<RemoteDesktopView, RemoteDesktopViewModel>();
 
-            window.ViewModel.Instance = transport.Instance;
+            window.ViewModel.Instance = instance;
             window.ViewModel.Server = IPAddress.IsLoopback(transport.Endpoint.Address)
                 ? "localhost"
                 : transport.Endpoint.Address.ToString();
@@ -222,6 +224,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
         }
 
         internal async Task<ISshTerminalSession> ConnectSshSessionAsync(
+            InstanceLocator instance,
             ITransport transport,
             SshSessionParameters parameters,
             SshCredential credential)
@@ -230,7 +233,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
 
             var window = this.toolWindowHost.GetToolWindow<SshTerminalView, SshTerminalViewModel>();
 
-            window.ViewModel.Instance = transport.Instance;
+            window.ViewModel.Instance = instance;
             window.ViewModel.Endpoint = transport.Endpoint;
             window.ViewModel.AuthorizedKey = credential.Key;
             window.ViewModel.Language = parameters.Language;
@@ -318,12 +321,17 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
             //
 
             var session = await ConnectSshSessionAsync(
+                    context.Instance,
                     result.Transport,
                     context.Parameters,
                     result.Credential)
                 .ConfigureAwait(true);
 
-            ((SessionViewBase)session).Disposed += (_, __) => context.Dispose();
+            ((SessionViewBase)session).Disposed += (_, __) =>
+            {
+                result.Transport.Dispose();
+                context.Dispose();
+            };
 
             return (ISession)session;
         }
@@ -339,11 +347,16 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
             //
 
             var session = ConnectRdpSession(
+                context.Instance,
                 result.Transport,
                 context.Parameters,
                 result.Credential);
 
-            ((SessionViewBase)session).Disposed += (_, __) => context.Dispose();
+            ((SessionViewBase)session).Disposed += (_, __) =>
+            {
+                result.Transport.Dispose();
+                context.Dispose();
+            };
 
             return (ISession)session;
         }
