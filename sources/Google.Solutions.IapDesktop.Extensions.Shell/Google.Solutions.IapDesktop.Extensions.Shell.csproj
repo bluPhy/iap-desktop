@@ -268,9 +268,6 @@
     <Compile Include="Views\Tunnels\TunnelsView.designer.cs">
       <DependentUpon>TunnelsView.cs</DependentUpon>
     </Compile>
-    <Compile Include="Services\Tunnel\Tunnel.cs" />
-    <Compile Include="Services\Tunnel\TunnelBrokerService.cs" />
-    <Compile Include="Services\Tunnel\TunnelService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

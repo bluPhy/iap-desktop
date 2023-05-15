@@ -179,7 +179,9 @@ namespace Google.Solutions.IapDesktop.Core.ObjectModel
                 .ContinueWith(
                     t =>
                     {
-                        Debug.Assert(false, "One or more subscribers failed to handle an event");
+                        Debug.Assert(
+                            false, 
+                            "One or more subscribers failed to handle an event: " + t.Exception);
                         CoreTraceSources.Default.TraceError(t.Exception);
                     },
                     TaskContinuationOptions.OnlyOnFaulted);

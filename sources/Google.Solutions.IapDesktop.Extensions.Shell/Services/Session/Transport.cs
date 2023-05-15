@@ -63,7 +63,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Services.Session
                         new SameProcessRelayPolicy(),
                         targetInstance,
                         targetPort,
-                        new IPEndPoint(IPAddress.Loopback, PortFinder.FindFreeLocalPort()),
+                        null, // Auto-assign port
                         timeout,
                         CancellationToken.None)
                     .ConfigureAwait(false);

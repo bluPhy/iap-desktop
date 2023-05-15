@@ -21,70 +21,53 @@
 
 using Google.Solutions.Common.Util;
 using Google.Solutions.IapDesktop.Application.ObjectModel;
-using Google.Solutions.IapDesktop.Application.Services.Integration;
 using Google.Solutions.IapDesktop.Application.Views.Dialog;
+using Google.Solutions.IapDesktop.Core.Net.Transport;
 using Google.Solutions.IapDesktop.Core.ObjectModel;
-using Google.Solutions.IapDesktop.Extensions.Shell.Services.Tunnel;
 using Google.Solutions.Mvvm.Binding;
-using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
 {
     [Service]
     public class TunnelsViewModel : ViewModelBase
     {
-        private readonly ITunnelBrokerService tunnelBrokerService;
-        private readonly IConfirmationDialog confirmationDialog;
-        private ITunnel selectedTunnel = null;
+        private readonly IIapTransportFactory factory;
+        private IIapTunnel selectedTunnel = null;
 
         //---------------------------------------------------------------------
         // Properties for data binding.
         //---------------------------------------------------------------------
 
-        public ObservableCollection<ITunnel> Tunnels { get; }
-            = new ObservableCollection<ITunnel>();
+        public ObservableCollection<IIapTunnel> Tunnels { get; }
+            = new ObservableCollection<IIapTunnel>();
 
-        public ITunnel SelectedTunnel
+        public IIapTunnel SelectedTunnel
         {
             get => this.selectedTunnel;
             set
             {
                 this.selectedTunnel = value;
-
                 RaisePropertyChange();
-                RaisePropertyChange((TunnelsViewModel m) => m.IsDisconnectButtonEnabled);
             }
         }
 
-        public bool IsDisconnectButtonEnabled => this.selectedTunnel != null;
         public bool IsRefreshButtonEnabled => this.Tunnels.Any();
 
         //---------------------------------------------------------------------
 
-
         public TunnelsViewModel(
-            ITunnelBrokerService tunnelBrokerService,
-            IConfirmationDialog confirmationDialog,
+            IIapTransportFactory factory,
             IEventQueue eventService)
         {
-            this.tunnelBrokerService = tunnelBrokerService.ExpectNotNull(nameof(tunnelBrokerService));
-            this.confirmationDialog = confirmationDialog.ExpectNotNull(nameof(confirmationDialog));
+            this.factory = factory.ExpectNotNull(nameof(factory));
 
+            //
             // Keep the model up to date.
-            eventService.Subscribe<TunnelOpenedEvent>(_ => RefreshTunnels());
-            eventService.Subscribe<TunnelClosedEvent>(_ => RefreshTunnels());
-        }
-
-        public TunnelsViewModel(IServiceProvider serviceProvider)
-            : this(
-                serviceProvider.GetService<ITunnelBrokerService>(),
-                serviceProvider.GetService<IConfirmationDialog>(),
-                serviceProvider.GetService<IEventQueue>())
-        {
+            //
+            eventService.Subscribe<TunnelEvents.TunnelCreated>(_ => RefreshTunnels());
+            eventService.Subscribe<TunnelEvents.TunnelClosed> (_ => RefreshTunnels());
         }
 
         //---------------------------------------------------------------------
@@ -95,38 +78,12 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
         {
             this.Tunnels.Clear();
 
-            foreach (var t in this.tunnelBrokerService.OpenTunnels)
+            foreach (var t in this.factory.Pool)
             {
                 this.Tunnels.Add(t);
             }
 
             RaisePropertyChange((TunnelsViewModel m) => m.IsRefreshButtonEnabled);
-        }
-
-        public async Task DisconnectSelectedTunnelAsync()
-        {
-            if (this.selectedTunnel == null)
-            {
-                return;
-            }
-
-            if (this.confirmationDialog.Confirm(
-                this.View,
-                "Are you sure you wish to terminate the tunnel to " +
-                    this.selectedTunnel.Destination.Instance + "?",
-                "Terminate tunnel",
-                "IAP tunnel") == DialogResult.Yes)
-            {
-                await this
-                    .tunnelBrokerService
-                    .DisconnectAsync(this.selectedTunnel.Destination)
-                    .ConfigureAwait(true);
-
-                // Reset selection.
-                this.SelectedTunnel = null;
-
-                RefreshTunnels();
-            }
         }
     }
 }

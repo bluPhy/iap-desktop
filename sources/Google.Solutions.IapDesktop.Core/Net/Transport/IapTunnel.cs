@@ -54,6 +54,10 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
         /// Flags characterizing this tunnel.
         /// </summary>
         IapTunnelFlags Flags { get; }
+
+
+        InstanceLocator TargetInstance { get; }
+        ushort TargetPort { get; }
     }
 
     [Flags]
@@ -89,6 +93,9 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
         internal event EventHandler Closed;
 
         public Profile Details { get; }
+
+        public InstanceLocator TargetInstance => this.Details.TargetInstance;
+        public ushort TargetPort => this.Details.TargetPort;
 
         internal IapTunnel(
             ISshRelayListener listener,

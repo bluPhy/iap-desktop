@@ -30,6 +30,7 @@ using Google.Solutions.Testing.Common;
 using Moq;
 using NUnit.Framework;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -404,6 +405,60 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
             eventQueue.Verify(
                 q => q.Publish(It.IsAny<TunnelEvents.TunnelClosed>()),
                 Times.Once);
+        }
+
+        [Test]
+        public async Task WhenFactoryPublishesEvents_ThenPoolIsUpToDate()
+        {
+            var invoke = new Mock<ISynchronizeInvoke>();
+            invoke.SetupGet(i => i.InvokeRequired).Returns(false);
+
+            var eventQueue = new EventQueue(invoke.Object);
+
+            var validProfile = CreateTunnelProfile(SampleInstance, 22);
+            var tunnelFactory = new Mock<IapTunnel.Factory>();
+            tunnelFactory
+                .Setup(f => f.CreateTunnelAsync(
+                    It.IsAny<IAuthorization>(),
+                    SampleUserAgent,
+                    validProfile,
+                    It.IsAny<TimeSpan>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(CreateTunnel(validProfile));
+
+            var factory = new IapTransportFactory(
+                CreateAuthorization().Object,
+                eventQueue,
+                SampleUserAgent,
+                tunnelFactory.Object);
+
+            int poolSizeWhenCreated = 0;
+            int poolSizeWhenClosed = 0;
+            eventQueue.Subscribe<TunnelEvents.TunnelCreated>(
+                _ => {
+                    poolSizeWhenCreated = factory.Pool.Count();
+                    return Task.CompletedTask;
+                });
+            eventQueue.Subscribe<TunnelEvents.TunnelClosed>(
+                _ => {
+                    poolSizeWhenClosed = factory.Pool.Count();
+                    return Task.CompletedTask;
+                });
+
+            using (var transport = await factory
+                .CreateTransportAsync(
+                    validProfile.Protocol,
+                    validProfile.Policy,
+                    validProfile.TargetInstance,
+                    validProfile.TargetPort,
+                    validProfile.LocalEndpoint,
+                    SampleTimeout,
+                    CancellationToken.None)
+                .ConfigureAwait(false))
+            { }
+
+            Assert.AreEqual(1, poolSizeWhenCreated);
+            Assert.AreEqual(0, poolSizeWhenClosed);
         }
     }
 }

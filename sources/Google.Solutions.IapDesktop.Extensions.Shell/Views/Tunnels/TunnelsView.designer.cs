@@ -49,10 +49,8 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
             this.refreshToolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.disconnectToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.tunnelsList = new Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels.TunnelsListView();
             this.instanceHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.projectIdHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -62,17 +60,13 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
             this.localPortHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.remotePortHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.protocolHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.disconnectTunnelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip.SuspendLayout();
-            this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // toolStrip
             // 
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.refreshToolStripButton,
-            this.disconnectToolStripButton});
+            this.refreshToolStripButton});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(862, 25);
@@ -87,15 +81,6 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
             this.refreshToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.refreshToolStripButton.Text = "Refresh";
             // 
-            // disconnectToolStripButton
-            // 
-            this.disconnectToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.disconnectToolStripButton.Enabled = false;
-            this.disconnectToolStripButton.Image = global::Google.Solutions.IapDesktop.Extensions.Shell.Properties.Resources.Delete_16;
-            this.disconnectToolStripButton.Name = "disconnectToolStripButton";
-            this.disconnectToolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.disconnectToolStripButton.Text = "Disconnect tunnel";
-            // 
             // tunnelsList
             // 
             this.tunnelsList.AutoResizeColumnsOnUpdate = false;
@@ -109,7 +94,6 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
             this.localPortHeader,
             this.remotePortHeader,
             this.protocolHeader});
-            this.tunnelsList.ContextMenuStrip = this.contextMenuStrip;
             this.tunnelsList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tunnelsList.FullRowSelect = true;
             this.tunnelsList.GridLines = true;
@@ -164,21 +148,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
             this.protocolHeader.Text = "Protocol";
             this.protocolHeader.Width = 146;
             // 
-            // contextMenuStrip
-            // 
-            this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.disconnectTunnelToolStripMenuItem});
-            this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(171, 26);
-            // 
-            // disconnectTunnelToolStripMenuItem
-            // 
-            this.disconnectTunnelToolStripMenuItem.Enabled = false;
-            this.disconnectTunnelToolStripMenuItem.Name = "disconnectTunnelToolStripMenuItem";
-            this.disconnectTunnelToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
-            this.disconnectTunnelToolStripMenuItem.Text = "&Disconnect tunnel";
-            // 
-            // TunnelsWindow
+            // TunnelsView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -186,12 +156,11 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
             this.ControlBox = false;
             this.Controls.Add(this.tunnelsList);
             this.Controls.Add(this.toolStrip);
-            this.Name = "TunnelsWindow";
+            this.Name = "TunnelsView";
             this.ShowIcon = false;
             this.Text = "Active IAP tunnels";
             this.toolStrip.ResumeLayout(false);
             this.toolStrip.PerformLayout();
-            this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -199,14 +168,11 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
 
         #endregion
         private System.Windows.Forms.ToolStrip toolStrip;
-        private System.Windows.Forms.ToolStripButton disconnectToolStripButton;
         private TunnelsListView tunnelsList;
         private System.Windows.Forms.ColumnHeader instanceHeader;
         private System.Windows.Forms.ColumnHeader projectIdHeader;
         private System.Windows.Forms.ColumnHeader zoneHeader;
         private System.Windows.Forms.ColumnHeader localPortHeader;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
-        private System.Windows.Forms.ToolStripMenuItem disconnectTunnelToolStripMenuItem;
         private System.Windows.Forms.ColumnHeader transmittedHeader;
         private System.Windows.Forms.ColumnHeader receivedHeader;
         private System.Windows.Forms.ToolStripButton refreshToolStripButton;

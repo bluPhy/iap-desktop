@@ -34,6 +34,9 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
     [TestFixture]
     public class TestIapTunnel
     {
+        private static readonly InstanceLocator SampleInstance
+            = new InstanceLocator("project-1", "zone-1", "instance-1");
+
         private static readonly IPEndPoint LoopbackEndpoint
             = new IPEndPoint(IPAddress.Loopback, 8000);
 
@@ -48,7 +51,7 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
             return new IapTunnel.Profile(
                 protocol.Object,
                 policy.Object,
-                new InstanceLocator("project-1", "zone-1", "instance-1"),
+                SampleInstance,
                 22,
                 LoopbackEndpoint);
         }
@@ -103,6 +106,40 @@ namespace Google.Solutions.IapDesktop.Core.Test.Net.Transport
                 IapTunnelFlags.None))
             {
                 Assert.AreSame(profile, tunnel.Details);
+            }
+        }
+
+        [Test]
+        public void TargetInstance()
+        {
+            var listener = new Mock<ISshRelayListener>();
+            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+
+            var profile = CreateTunnelProfile();
+
+            using (var tunnel = new IapTunnel(
+                listener.Object,
+                profile,
+                IapTunnelFlags.None))
+            {
+                Assert.AreEqual(SampleInstance, tunnel.TargetInstance);
+            }
+        }
+
+        [Test]
+        public void TargetPort()
+        {
+            var listener = new Mock<ISshRelayListener>();
+            listener.SetupGet(l => l.LocalPort).Returns(LoopbackEndpoint.Port);
+
+            var profile = CreateTunnelProfile();
+
+            using (var tunnel = new IapTunnel(
+                listener.Object,
+                profile,
+                IapTunnelFlags.None))
+            {
+                Assert.AreEqual(22, tunnel.TargetPort);
             }
         }
 

@@ -150,8 +150,13 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
                     // Track lifecycle.
                     //
                     tunnelTask = tunnelTask.ContinueWith(t =>
-                    { 
-                        OnTunnelCreated(t.Result);
+                    {
+                        lock (this.tunnelPoolLock)
+                        {
+                            this.tunnelPool[profile] = t;
+                        }
+
+                        OnTunnelCreated(t.Result); 
                         t.Result.Closed += OnClosed;
                         return t.Result;
                     });
@@ -159,11 +164,20 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
                     void OnClosed(object sender, EventArgs __)
                     {
                         var tunnel = (IapTunnel)sender;
+                        
+                        //
+                        // Remove from pool.
+                        //
+                        lock (this.tunnelPoolLock)
+                        {
+                            var removed = this.tunnelPool.Remove(tunnel.Details);
+                            Debug.Assert(removed);
+                        }
+
                         OnTunnelClosed(tunnel);
                         tunnel.Closed -= OnClosed;
                     }
 
-                    this.tunnelPool[profile] = tunnelTask;
                 }
 
                 Debug.Assert(tunnelTask != null);
@@ -255,7 +269,7 @@ namespace Google.Solutions.IapDesktop.Core.Net.Transport
                 {
                     localEndpoint = new IPEndPoint(
                         IPAddress.Loopback,
-                        PortFinder.FindFreeLocalPort());
+                        PortFinder.FindFreeLocalPort()); //TODO: BUG: This breaks sharing
                 }
 
                 var profile = new IapTunnel.Profile(

@@ -252,7 +252,7 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
             window.Show();
 
             await session.ConnectAsync()
-                .ConfigureAwait(false);
+                .ConfigureAwait(true); // TODO: BUG => backport!
 
             OnSessionConnected(session);
 
@@ -329,8 +329,8 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
 
             ((SessionViewBase)session).Disposed += (_, __) =>
             {
-                result.Transport.Dispose();
                 context.Dispose();
+                result.Transport.Dispose();
             };
 
             return (ISession)session;
@@ -354,8 +354,8 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Session
 
             ((SessionViewBase)session).Disposed += (_, __) =>
             {
-                result.Transport.Dispose();
                 context.Dispose();
+                result.Transport.Dispose();
             };
 
             return (ISession)session;

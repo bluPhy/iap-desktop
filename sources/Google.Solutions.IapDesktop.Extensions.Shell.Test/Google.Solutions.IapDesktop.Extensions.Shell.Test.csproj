@@ -156,7 +156,6 @@
     <Compile Include="Services\Settings\TestConnectionSettingsRepository.cs" />
     <Compile Include="Services\Settings\TestIapRdpUrlConnectionSettings.cs" />
     <Compile Include="Services\Tunnel\TestTcpTable.cs" />
-    <Compile Include="Services\Tunnel\TestTunnelServiceWithMtls.cs" />
     <Compile Include="ShellFixtureBase.cs" />
     <Compile Include="Views\ConnectionSettings\TestConnectionSettingsCommands.cs" />
     <Compile Include="Views\ConnectionSettings\TestConnectionSettingsViewModel.cs" />
@@ -184,8 +183,6 @@
     <Compile Include="Views\TestSessionPaneBase.cs" />
     <Compile Include="Views\Tunnels\TestTunnelsViewCommands.cs" />
     <Compile Include="Views\Tunnels\TestTunnelsViewModel.cs" />
-    <Compile Include="Services\Tunnel\TestTunnelBrokerService.cs" />
-    <Compile Include="Services\Tunnel\TestTunnelService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

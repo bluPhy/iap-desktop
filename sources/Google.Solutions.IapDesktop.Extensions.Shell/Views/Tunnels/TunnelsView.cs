@@ -22,14 +22,12 @@
 using Google.Solutions.Common.Diagnostics;
 using Google.Solutions.IapDesktop.Application.ObjectModel;
 using Google.Solutions.IapDesktop.Application.Views;
-using Google.Solutions.IapDesktop.Extensions.Shell.Services.Tunnel;
+using Google.Solutions.IapDesktop.Core.Net.Transport;
 using Google.Solutions.Mvvm.Binding;
 using Google.Solutions.Mvvm.Controls;
 using Google.Solutions.Mvvm.Format;
 using System;
 using WeifenLuo.WinFormsUI.Docking;
-
-#pragma warning disable IDE1006 // Naming Styles
 
 namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
 {
@@ -52,14 +50,14 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
         public void Bind(TunnelsViewModel viewModel, IBindingContext bindingContext)
         {
             this.tunnelsList.BindCollection(viewModel.Tunnels);
-            this.tunnelsList.BindColumn(0, t => t.Destination.Instance.Name);
-            this.tunnelsList.BindColumn(1, t => t.Destination.Instance.ProjectId);
-            this.tunnelsList.BindColumn(2, t => t.Destination.Instance.Zone);
-            this.tunnelsList.BindColumn(3, t => ByteSizeFormatter.Format(t.BytesTransmitted));
-            this.tunnelsList.BindColumn(4, t => ByteSizeFormatter.Format(t.BytesReceived));
-            this.tunnelsList.BindColumn(5, t => t.LocalPort.ToString());
-            this.tunnelsList.BindColumn(6, t => t.Destination.RemotePort.ToString());
-            this.tunnelsList.BindColumn(7, t => t.IsMutualTlsEnabled ? "mTLS" : "TLS");
+            this.tunnelsList.BindColumn(0, t => t.TargetInstance.Name);
+            this.tunnelsList.BindColumn(1, t => t.TargetInstance.ProjectId);
+            this.tunnelsList.BindColumn(2, t => t.TargetInstance.Zone);
+            this.tunnelsList.BindColumn(3, t => ByteSizeFormatter.Format(t.Statistics.BytesTransmitted));
+            this.tunnelsList.BindColumn(4, t => ByteSizeFormatter.Format(t.Statistics.BytesReceived));
+            this.tunnelsList.BindColumn(5, t => t.LocalEndpoint.ToString());
+            this.tunnelsList.BindColumn(6, t => t.TargetPort.ToString());
+            this.tunnelsList.BindColumn(7, t => t.Flags.HasFlag(IapTunnelFlags.Mtls) ? "mTLS" : "TLS");
 
             this.tunnelsList.BindProperty(
                 v => this.tunnelsList.SelectedModelItem,
@@ -71,23 +69,6 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
                 viewModel,
                 m => m.IsRefreshButtonEnabled,
                 bindingContext);
-            this.disconnectToolStripButton.BindReadonlyProperty(
-                b => b.Enabled,
-                viewModel,
-                m => m.IsDisconnectButtonEnabled,
-                bindingContext);
-            this.disconnectTunnelToolStripMenuItem.BindReadonlyProperty(
-                b => b.Enabled,
-                viewModel,
-                m => m.IsDisconnectButtonEnabled,
-                bindingContext);
-
-            this.disconnectToolStripButton.Click += async (_, __) => await viewModel
-                .DisconnectSelectedTunnelAsync()
-                .ConfigureAwait(true);
-            this.disconnectTunnelToolStripMenuItem.Click += async (_, __) => await viewModel
-                .DisconnectSelectedTunnelAsync()
-                .ConfigureAwait(true);
             this.refreshToolStripButton.Click += (_, __) => viewModel.RefreshTunnels();
 
 
@@ -95,6 +76,6 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels
         }
     }
 
-    public class TunnelsListView : BindableListView<ITunnel>
+    public class TunnelsListView : BindableListView<IIapTunnel>
     { }
 }

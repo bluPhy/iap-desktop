@@ -20,91 +20,72 @@
 //
 
 using Google.Solutions.Apis.Locator;
-using Google.Solutions.IapDesktop.Application.Services.Integration;
-using Google.Solutions.IapDesktop.Application.Views.Dialog;
+using Google.Solutions.IapDesktop.Core.Net.Transport;
 using Google.Solutions.IapDesktop.Core.ObjectModel;
-using Google.Solutions.IapDesktop.Extensions.Shell.Services.Tunnel;
 using Google.Solutions.IapDesktop.Extensions.Shell.Views.Tunnels;
 using Moq;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.Tunnels
 {
     [TestFixture]
     public class TestTunnelsViewModel : ShellFixtureBase
     {
-        private static Mock<IConfirmationDialog> CreateConfirmationDialog(DialogResult result)
+        private static Mock<IIapTunnel> CreateTunnel(string instanceName)
         {
-            var confirmationDialog = new Mock<IConfirmationDialog>();
-            confirmationDialog.Setup(d => d.Confirm(
-                It.IsAny<IWin32Window>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<string>())).Returns(result);
-            return confirmationDialog;
-        }
-
-        private static Mock<ITunnel> CreateTunnel(string instanceName)
-        {
-            var tunnel = new Mock<ITunnel>();
-            tunnel.SetupGet(t => t.Destination)
-                .Returns(new TunnelDestination(
-                    new InstanceLocator("project-1", "zone", instanceName),
-                    123));
+            var tunnel = new Mock<IIapTunnel>();
+            tunnel
+                .SetupGet(t => t.TargetInstance)
+                .Returns(new InstanceLocator("project-1", "zone", instanceName));
             return tunnel;
         }
 
-        private static Mock<ITunnelBrokerService> CreateTunnelBroker(int tunnelCount)
+        //---------------------------------------------------------------------
+        // Events.
+        //---------------------------------------------------------------------
+
+        [Test]
+        public void WhenTunnelCreatedOrClosed_ThenListRefreshes()
         {
-            var tunnels = new List<ITunnel>();
+            var invoke = new Mock<ISynchronizeInvoke>();
+            invoke.SetupGet(i => i.InvokeRequired).Returns(false);
 
-            for (int i = 0; i < tunnelCount; i++)
-            {
-                tunnels.Add(CreateTunnel("instance-" + i).Object);
-            }
+            var queue = new EventQueue(invoke.Object);
+            var factory = new Mock<IIapTransportFactory>();
+            factory
+                .SetupGet(f => f.Pool)
+                .Returns(new[] { CreateTunnel("instance-1").Object });
 
-            var broker = new Mock<ITunnelBrokerService>();
-            broker.SetupGet(b => b.OpenTunnels).Returns(tunnels);
-            return broker;
-        }
+            var viewModel = new TunnelsViewModel(
+                factory.Object,
+                queue);
 
-        private class MockEventService : IEventQueue
-        {
-            public virtual ISubscription Subscribe<TEvent>(Action<TEvent> handler)
-            {
-                return new Mock<ISubscription>().Object;
-            }
+            factory.VerifyGet(f => f.Pool, Times.Once);
+            Assert.AreEqual(0, viewModel.Tunnels.Count);
 
-            public virtual ISubscription Subscribe<TEvent>(Func<TEvent, Task> handler)
-            {
-                return new Mock<ISubscription>().Object;
-            }
+            queue.Publish(new TunnelEvents.TunnelCreated());
+            factory.VerifyGet(f => f.Pool, Times.Exactly(2));
 
-            public Task PublishAsync<TEvent>(TEvent eventObject)
-            {
-                return Task.FromResult(0);
-            }
-
-            public void Publish<TEvent>(TEvent eventObject)
-            {
-            }
+            queue.Publish(new TunnelEvents.TunnelClosed());
+            factory.VerifyGet(f => f.Pool, Times.Exactly(3));
         }
 
         //---------------------------------------------------------------------
-        // Refresh.
+        // IsRefreshButtonEnabled.
         //---------------------------------------------------------------------
 
         [Test]
         public void WhenTunnelsListEmpty_ThenRefreshButtonIsDisabled()
         {
+            var factory = new Mock<IIapTransportFactory>(); factory
+                 .SetupGet(f => f.Pool)
+                 .Returns(Enumerable.Empty<IIapTunnel>());
+
             var viewModel = new TunnelsViewModel(
-                CreateTunnelBroker(0).Object,
-                CreateConfirmationDialog(DialogResult.Cancel).Object,
-                new MockEventService());
+                factory.Object,
+                new Mock<IEventQueue>().Object);
             viewModel.RefreshTunnels();
 
             Assert.IsFalse(viewModel.IsRefreshButtonEnabled);
@@ -113,104 +94,17 @@ namespace Google.Solutions.IapDesktop.Extensions.Shell.Test.Views.Tunnels
         [Test]
         public void WhenOneTunnelOpen_ThenRefreshButtonIsEnabled()
         {
+            var factory = new Mock<IIapTransportFactory>();
+            factory
+                .SetupGet(f => f.Pool)
+                .Returns(new[] { CreateTunnel("instance-1").Object });
+
             var viewModel = new TunnelsViewModel(
-                CreateTunnelBroker(1).Object,
-                CreateConfirmationDialog(DialogResult.Cancel).Object,
-                new MockEventService());
+                factory.Object,
+                new Mock<IEventQueue>().Object);
             viewModel.RefreshTunnels();
 
             Assert.IsTrue(viewModel.IsRefreshButtonEnabled);
-        }
-
-        //---------------------------------------------------------------------
-        // Disconnect.
-        //---------------------------------------------------------------------
-
-        [Test]
-        public void WhenTunnelsListEmpty_ThenDisconnectButtonIsDisabled()
-        {
-            var viewModel = new TunnelsViewModel(
-                CreateTunnelBroker(0).Object,
-                CreateConfirmationDialog(DialogResult.Cancel).Object,
-                new MockEventService());
-            viewModel.RefreshTunnels();
-
-            Assert.IsFalse(viewModel.IsDisconnectButtonEnabled);
-        }
-
-        [Test]
-        public void WhenTunnelSelected_ThenDisconnectButtonIsEnabled()
-        {
-            var viewModel = new TunnelsViewModel(
-                CreateTunnelBroker(1).Object,
-                CreateConfirmationDialog(DialogResult.Cancel).Object,
-                new MockEventService());
-            viewModel.RefreshTunnels();
-
-            Assert.IsFalse(viewModel.IsDisconnectButtonEnabled);
-
-            viewModel.SelectedTunnel = viewModel.Tunnels[0];
-            Assert.IsTrue(viewModel.IsDisconnectButtonEnabled);
-        }
-
-        [Test]
-        public async Task WhenNoTunnelSelected_ThenDisconnectSelectedTunnelDoesNothing()
-        {
-            var viewModel = new TunnelsViewModel(
-                CreateTunnelBroker(1).Object,
-                CreateConfirmationDialog(DialogResult.Cancel).Object,
-                new MockEventService());
-            viewModel.RefreshTunnels();
-
-            Assert.AreEqual(1, viewModel.Tunnels.Count);
-
-            await viewModel
-                .DisconnectSelectedTunnelAsync()
-                .ConfigureAwait(true);
-
-            Assert.AreEqual(1, viewModel.Tunnels.Count);
-        }
-
-        [Test]
-        public async Task WhenTunnelSelectedAndDisconnectConfirmed_ThenTunnelIsClosed()
-        {
-            var broker = CreateTunnelBroker(1);
-            var viewModel = new TunnelsViewModel(
-                broker.Object,
-                CreateConfirmationDialog(DialogResult.Yes).Object,
-                new MockEventService());
-            viewModel.RefreshTunnels();
-            viewModel.SelectedTunnel = viewModel.Tunnels[0];
-
-            Assert.AreEqual(1, viewModel.Tunnels.Count);
-
-            await viewModel
-                .DisconnectSelectedTunnelAsync()
-                .ConfigureAwait(true);
-
-            broker.Verify(b => b.DisconnectAsync(It.IsAny<TunnelDestination>()), Times.Once);
-            Assert.IsNull(viewModel.SelectedTunnel);
-        }
-
-        [Test]
-        public async Task WhenTunnelSelectedAndDisconnectNotConfirmed_ThenTunnelIsLeftOpen()
-        {
-            var broker = CreateTunnelBroker(1);
-            var viewModel = new TunnelsViewModel(
-                broker.Object,
-                CreateConfirmationDialog(DialogResult.Cancel).Object,
-                new MockEventService());
-            viewModel.RefreshTunnels();
-            viewModel.SelectedTunnel = viewModel.Tunnels[0];
-
-            Assert.AreEqual(1, viewModel.Tunnels.Count);
-
-            await viewModel
-                .DisconnectSelectedTunnelAsync()
-                .ConfigureAwait(true);
-
-            broker.Verify(b => b.DisconnectAsync(It.IsAny<TunnelDestination>()), Times.Never);
-            Assert.IsNotNull(viewModel.SelectedTunnel);
         }
     }
 }
